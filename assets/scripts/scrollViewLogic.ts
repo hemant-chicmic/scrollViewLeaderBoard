@@ -14,14 +14,19 @@ export class scrollViewLogic extends Component {
     rowPrefab : Prefab | null = null ;
 
 
-    private rowNum :number = 0; 
+    private rowNum :number = -1 ; 
+    private isTop = true; 
     private isBottom = true; 
 
     start() 
     {
 
 
-
+        // // // // //  using array fo object and add rows only 
+        // // // // //  using array fo object and add rows only 
+        // // // // //  using array fo object and add rows only 
+        //
+        //
         // const leaderboardData: { name: string, score: number }[] = [
         //     { name: "Player 1", score: 75 },
         //     { name: "Player 2", score: 73 },
@@ -60,17 +65,49 @@ export class scrollViewLogic extends Component {
 
 
 
-        this.scrollViewNode?.node.on('scroll-to-bottom', this.onScrollToBottom, this);
-        this.addRow() ;
+        //
+        // // // //  Using prefab and additional functionality such as infinit scroll or on click  scroll
+        // // // //  Using prefab and additional functionality such as infinit scroll or on click  scroll
+        // // // //  Using prefab and additional functionality such as infinit scroll or on click  scroll
+        //
+        // // // also optimezed means it remove rows which is not showing
+        // // // also optimezed means it remove rows which is not showing
+        // // // also optimezed means it remove rows which is not showing
+        //
+        //
+
+
+        this.scrollViewNode.node.on('scroll-to-top', this.onScrollToTop, this);
+        this.scrollViewNode.node.on('scroll-to-bottom', this.onScrollToBottom, this);
+        // this.addRowFromTop() ;
+        this.addRowFromBottom() ;
 
 
 
         
     }
 
+
+    //
+    // // // //  Using prefab and additional functionality such as infinit scroll or on click  scroll
+    // // // //  Using prefab and additional functionality such as infinit scroll or on click  scroll
+    // // // //  Using prefab and additional functionality such as infinit scroll or on click  scroll
+    //
+    // // // also optimezed means it remove rows which is not showing
+    // // // also optimezed means it remove rows which is not showing
+    // // // also optimezed means it remove rows which is not showing
+    //
+    //
+
+    onScrollToTop()
+    {
+        this.isTop = true ; 
+        this.addRowFromTop() ;
+    }
+
     onScrollToBottom() {
         this.isBottom = true;
-        // this.addRow();     
+        this.addRowFromBottom();     
 
 
         // // uncomment the above if we want to make infinite scroll bar without buttom ( load more)       
@@ -84,26 +121,89 @@ export class scrollViewLogic extends Component {
         //   
         //    
         // // both are infinite but one is infinite like when we click on load more buttom    
-        // // and 2nd it infinite whenever scrollbar reahed at the end    
+        // // and 2nd it infinite whenever scrollbar reached at the end    
     }
 
-    addRow()
+
+
+    addRowFromTop()
+    {
+        if( ! this.isTop ) return ;
+        let topSrNo = this.contentNode.children[0].getChildByName('rowNumber').getComponent(Label).string ;
+        console.log( " ser no => " , topSrNo ) ;
+        if( parseInt(topSrNo) == 1) return ;
+        console.log( "add more row from top "  ) ;
+        this.rowNum = parseInt(topSrNo);
+
+        let numrows = 20 ;
+        for(let i = 0; i < numrows+10; i++) 
+        {
+            let rowInstance = instantiate(this.rowPrefab);
+            let index = randomRangeInt(0, 10) ;
+            this.rowNum -- ;
+            if( this.rowNum == 0 ) break ;
+            rowInstance.getComponent(rowPrefabLogic).setRowData(index , this.rowNum); // Pass index i
+            this.contentNode.insertChild(rowInstance, 0);
+        }
+        this.isTop = false  ; 
+        let childCount = this.contentNode.children.length ;
+        console.log( "  top size before => " , childCount ) ; 
+        if( childCount > numrows * 2 )
+        {
+            console.log("Removing rows from the bottom");
+            // Remove the first 10 children from the content node
+            for (let i = childCount-1; i >= childCount-(numrows/2); i-- ) {
+                this.contentNode.removeChild(this.contentNode.children[i]);
+            }
+        }
+        console.log( "  top size after => " , this.contentNode.children.length ) ; 
+    }
+
+
+
+    addRowFromBottom()
     {
         if( ! this.isBottom ) return ;
-        console.log( "add more "  ) ;
-        // const rowArray:Node[] = [ ] ;
+        console.log( "add more from bottom "  ) ;
+
+
+        let childCount = this.contentNode.children.length ;
+        console.log( "  bottom size before => " , childCount , "  rowNum " , this.rowNum ) ; 
+        if( this.rowNum > 0 )
+        {
+            let topSrNo = this.contentNode.children[childCount-1].getChildByName('rowNumber').getComponent(Label).string ;
+            // console.log( " ser no => " , topSrNo ) ;
+            console.log( "add more row from top "  ) ;
+            this.rowNum = parseInt(topSrNo);
+        }
+        else this.rowNum = childCount ;
+
         let numrows = 10 ;
+        // this.rowNum = childCount ;
         for(let i = 0; i < numrows; i++) 
         {
             let rowInstance = instantiate(this.rowPrefab);
-            // let index = randomRangeInt(0, 10) ;
+            let index = randomRangeInt(0, 10) ;
             this.rowNum ++ ;
-            rowInstance.getComponent(rowPrefabLogic).setRowData(i , this.rowNum); // Pass index i
+            rowInstance.getComponent(rowPrefabLogic).setRowData(index , this.rowNum); // Pass index i
             rowInstance.setParent(this.contentNode);
         }
-        this.isBottom = false  ;  
+        this.isBottom = false  ; 
+        
+        // console.log( "  bottom size before => " , childCount ) ; 
+        if( childCount >= numrows * 2 )
+        {
+            console.log("Removing rows from the top");
+            // Remove the first 10 children from the content node
+            for (let i = 0; i < numrows/2; i++) 
+            {
+                this.contentNode.removeChild(this.contentNode.children[0]);
+            }
+        }
+        console.log( "  bottom size after => " , this.contentNode.children.length ) ; 
     }
 
+    
 
 
     update(deltaTime: number) {
